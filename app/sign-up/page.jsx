@@ -1,35 +1,33 @@
-//Страница - форма подтверждения входа в сиситему
-
 'use client'
 
-import { getCsrfToken, signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useQuery, useMutation } from '@tanstack/react-query'
+import setData from '@/helpers/setData'
+import { createNewUser } from '@/queries/Users'
 
-function SignIn(){
-
-	const csrfToken = getCsrfToken()
-
-	const router = useRouter()
-	const [ error, setError ] = useState(false)
+function SignUp(){
+	//активируем мутацию создания пользователя
+	const signUpMutation = useMutation({
+		mutationFn: (newUser) => {		
+			setData(createNewUser, { data: newUser }, '/system').then((response) =>
+			{//'/system' - значение для второго аргумента additionalPath функции setData
+				console.log(response)
+			}
+			)
+		},
+		mutationKey: ['signUpUser']	
+	})
 
 	//функция handleSubmit активируется при отправке формы по нажатию на кнопку типа input
-	
-	const handleSubmit = async (e) =>{	
+	const handleSubmit = (e) =>{	
 		e.preventDefault()
-		
-		const res = await signIn('credentials', { //signIn - Клиентский метод для инициации процесса входа или отправки пользователя на страницу входа со списком всех возможных поставщиков. Автоматически добавляет токен CSRF в запрос.
-			redirect: false,
-			email: e.target.email.value,
-			password: e.target.password.value,
-			callbackUrl: `/user-area`,//callbackUrl - свойство метода signIn для пренаправления на страницу пользователя '/user-area'
-		  });
-	  
-		  if (res?.error) {//если ответ ошибочен
-			setError(true);//состояние для error переведёт в true
-		  } else {//иначе:
-			router.push('/user-area');//пренаправит на страницу пользователя '/user-area'
-		  }
+		console.log(e.target.password.value)
+		signUpMutation.mutate({//передать в мутацию создания пользователя значения для data			
+			email: e.target.email.value, //значение емайла из инпута
+			password: e.target.password.value, //значение пароля из инпута
+			role: 'ca8effef-24a7-470a-9cc3-922c3fc5024e', //id роли - 'Customer'
+			status: 'active',
+			provider: 'default',
+		})
 	}
 
 	return (
@@ -38,14 +36,18 @@ function SignIn(){
 				<form
 					className='mt-8 space-y-6'
 					noValidate
-					onSubmit={ (e) => handleSubmit(e) }//
+					onSubmit={ (e) => handleSubmit(e) }
 				>
-					<input name="csrfToken" type="hidden" defaultValue={csrfToken} />
 					{/* <form className="mt-8 space-y-6" noValidate > */ }
 					<div className='rounded-md shadow-sm -space-y-px'>
 						<div>
 							{/* Свойство HTMLLabelElement.htmlFor отражает значение свойства for content. Это означает, что это доступное для сценария свойство используется для установки и чтения значения свойства содержимого, которое является идентификатором связанного с меткой элемента управления. */ }
-							<label htmlFor='email-address' className='sr-only'>	Email address </label>
+							<label
+								htmlFor='email-address'
+								className='sr-only'
+							>
+								Email address
+							</label>
 							<input
 								id='email-address'
 								name='email'
@@ -80,15 +82,13 @@ function SignIn(){
 							type='submit'
 							className='group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
 						>
-							Sign in
+							Sign up
 						</button>
 					</div>
-					
 				</form>
-				{error && <div className="bg-red-300 p-2 text-white rounded">Wrong email or password</div>}
 			</div>
 		</div>
 	)
 }
 
-export default SignIn
+export default SignUp

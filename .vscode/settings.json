@@ -1,0 +1,18 @@
+{
+    "editor.tokenColorCustomizations": {
+        "[Monokai]": {
+            "comments": "#1eb482",
+            "textMateRules": [
+                {
+                    "scope": "comment",
+                    "settings": {
+                        "foreground": "#24bb89d3",
+                        "fontStyle": "italic"
+                    }
+                }
+            ]
+        },
+        "comments": "",
+        "textMateRules": []
+    }
+}

@@ -1,0 +1,15 @@
+name: Remote Schema
+schema: remote-schema.graphql
+documents: 'queries/*.js'
+extensions:
+  endpoints:
+    main endpoint:
+      url: http://localhost:8060/graphql
+      headers:
+        user-agent: JS GraphQL
+#        introspect: true
+    system endpoint:
+      url: http://localhost:8060/graphql/system
+#      headers:
+#        user-agent: JS GraphQL
+#        introspect: true
