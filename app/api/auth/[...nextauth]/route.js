@@ -5,24 +5,23 @@ import { stringify } from 'postcss'
 
 const pubAPI = process.env.DIRECTUS_PUBLIC_API
 
-const options = {
-    
+const options = {//опции для хендлера NextAuth
     providers: [
         CredentialsProvider({
             name: 'Credentials',
             credentials: {
-                // email: {label: 'Email', type: 'text', placeholder: 'Enter your email'},
-                // password: {label: 'Password', type: 'password', placeholder: 'Enter your password'},
-                email: {},
-                password: {},
+                email: {label: 'Email', type: 'text', placeholder: 'Enter your email'},
+                password: {label: 'Password', type: 'password', placeholder: 'Enter your password'},
+                // email: {},
+                // password: {},
               },
-            async authorize(credentials) {
+            async authorize(credentials) {//метод authorize создаст авторизованного пользователя(при условии возможности его входа в систему)
                 // const payload = {
                 //     email: credentials.email,
                 //     password: credentials.password,
                 // }
 
-                const res = await fetch(`${pubAPI}/auth/login`, {
+                const res = await fetch(`${pubAPI}/auth/login`, {//REST - запрос для авторизации к ендпоинту Directus 'http://localhost:8060/auth/login'
                     method: 'POST',
                     body: JSON.stringify(credentials),
                     headers: { 'Content-Type': 'application/json'},

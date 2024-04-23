@@ -8,8 +8,7 @@ function SignUp(){
 	//активируем мутацию создания пользователя
 	const signUpMutation = useMutation({
 		mutationFn: (newUser) => {		
-			setData(createNewUser, { data: newUser }, '/system').then((response) =>
-			{//'/system' - значение для второго аргумента additionalPath функции setData
+			setData(createNewUser, { data: newUser }, '/system').then((response) =>{ //'/system' - значение для второго аргумента - additionalPath функции setData
 				console.log(response)
 			}
 			)
@@ -42,12 +41,7 @@ function SignUp(){
 					<div className='rounded-md shadow-sm -space-y-px'>
 						<div>
 							{/* Свойство HTMLLabelElement.htmlFor отражает значение свойства for content. Это означает, что это доступное для сценария свойство используется для установки и чтения значения свойства содержимого, которое является идентификатором связанного с меткой элемента управления. */ }
-							<label
-								htmlFor='email-address'
-								className='sr-only'
-							>
-								Email address
-							</label>
+							<label htmlFor='email-address'	className='sr-only'	>Email address</label>
 							<input
 								id='email-address'
 								name='email'
