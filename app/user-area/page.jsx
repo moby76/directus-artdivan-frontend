@@ -10,7 +10,7 @@ const fetchData = async (query, token, { variables = {} }) => //1. graphql-за�
 {//запрос, токен, переменные
    const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${ token }`,//NOTE - в авторизацию 
+      Authorization: `Bearer ${ token }`,//
    };
 
    //получить данные по текущему пользователю. Через fetch(?) //FIXME - 
