@@ -6,7 +6,6 @@ import MiniCart from "./components/MiniCart";
 import Header from "./components/Header";
 import { getServerSession } from "next-auth";
 import SessProvider from '@/utils/SessionProvider'
-import SessionProvider from "@/utils/SessionProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 

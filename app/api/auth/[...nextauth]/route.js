@@ -1,7 +1,5 @@
 import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import { signIn } from 'next-auth/react'
-import { stringify } from 'postcss'
 
 const pubAPI = process.env.DIRECTUS_PUBLIC_API
 
@@ -51,17 +49,20 @@ const options = {//опции для хендлера NextAuth
     },
 
     callbacks: {
-        async jwt({ token, user, account }) {
-          if (account && user) {
+        async jwt({ token, user, trigger, session  }) {
+          if (user) {
             return {
               ...token,
               accessToken: user.data.access_token,
-              refreshToken: user.data.refresh_token,
-              
+              refreshToken: user.data.refresh_token,              
             };
           }
+
+          if (trigger === "update") {
+            return { ...token, ...session.user };
+          }
     
-          return token;
+          return {...token, ...user};
         },
 
         session: {
@@ -71,8 +72,8 @@ const options = {//опции для хендлера NextAuth
       },
     
         async session({ session, token }) {
-          session.user.accessToken = token.accessToken;
-          session.user.refreshToken = token.refreshToken;
+          session.user.accessToken = await token.accessToken;
+          session.user.refreshToken = await token.refreshToken;
     
           return session;
         },

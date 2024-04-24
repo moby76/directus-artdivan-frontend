@@ -1,5 +1,5 @@
 
-//Запрос по продуктвм
+//Запрос всех продуктов
 export const HomepageProductsQuery = `#graphql    
     
     query HomepageProducts {
@@ -24,7 +24,7 @@ export const HomepageProductsQuery = `#graphql
 
 `
 
-//Запрос на список категорийц
+//Запрос на список категорий
 export const HomepageCategoriesQuery = `#graphql
     
     query HomepageCategories {
