@@ -6,7 +6,7 @@ export default function SessProvider({ children }) {
     return(
         <SessionProvider
             // refetchOnWindowFocus={false}
-            // refetchInterval={30}            
+            // refetchInterval={5}            
         >
             {children}
         </SessionProvider>

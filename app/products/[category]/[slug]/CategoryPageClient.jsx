@@ -3,14 +3,14 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import setData from '@/helpers/setData'
-import { createSession, getSession, updateSession } from '@/queries/sessions'
 import getData from '@/queries/getData'
 import { v4 as uuidv4 } from 'uuid'
 import useStore from '@/store/temp_orders'
+import { createPreorder, getPreorder, updatePreorder } from '@/queries/preorders'
 
 const assetsUrl = process.env.NEXT_PUBLIC_ASSETS_URL
 
-export default function CategoryPageClient({ product })
+export default function CategoryPageClient({ product, session })
 {
     // console.log(product);
     const queryClient = useQueryClient()//получить запросы из кэша useQuery
@@ -33,53 +33,59 @@ export default function CategoryPageClient({ product })
     const [colorValue, setColorValue] = useState(null) //значение colorId будет изменяться при нажатии чекбокса выбора цвета
     const [sizeShortTitle, setSizeShortTitle] = useState(null)
     //id сессии не должно меняться при повторных отправках данных. Для отслеживания сессии создать состояние проверяющее localStorage браузера
-    const [isSessionSet, setSession] = useState(
+    const [isPreorderSet, setPreorder] = useState(
         //FIXME - при открытии продукта в новом окне или перезагрузке текущего окна браузера сессия перезаписывается, хотя остаётся тот-же сеанс
-        typeof window !== 'undefined' && localStorage.getItem('session_id') !== null //
+        typeof window !== 'undefined' && localStorage.getItem('preorder_id') !== null //
     )
 
     //получить уже созданный предзаказ текущей сессии(по id сессии) для добавления в него новых данных(товаров или вариаций)
-    const { data: session, isSuccess } = useQuery({
-        queryKey: ['session'], //ключевой идентификатор данного запроса
+    // const { data: session, isSuccess } = useQuery({
+    //     queryKey: ['session'], //ключевой идентификатор данного запроса
+    //     queryFn: async () =>
+    //         await getData(getSession, 'session_by_id', { id: localStorage.getItem('preorder_id') }),
+    //     staleTime: Infinity,// refetchOnWindowFocus: false,
+    //     enabled: isPreorderSet, // enabled: isPreorderSet, //enabled: isPreorderSet - пометка для "react query devtools"
+    // })
+
+    //получить уже созданный предзаказ (по id сессии) для добавления в него новых данных(товаров или вариаций)
+    const { data: preorder, isSuccess } = useQuery({
+        queryKey: ['preorder'], //ключевой идентификатор данного запроса
         queryFn: async () =>
-            await getData(getSession, 'session_by_id', {
-                id: localStorage.getItem('session_id'),
-            }),
+            await getData(getPreorder, 'preorder_by_id', { id: localStorage.getItem('preorder_id') }),
         staleTime: Infinity,// refetchOnWindowFocus: false,
-        enabled: isSessionSet, // enabled: isSessionSet, //enabled: isSessionSet - пометка для "react query devtools"
+        enabled: isPreorderSet, // enabled: isPreorderSet, //enabled: isPreorderSet - пометка для "react query devtools"
     })
 
-    //ATTENTION - это состояние должно следовать только после уже запущенного useQuery на получение сессии --^
+    //ATTENTION - это состояние должно следовать только после уже запущенного useQuery на получение предзаказа --^
     //задать состояние для предзаказа. первоначальное значение(сначала проверяется - создана-ли сессия, если создана, то получаем уже созданный предзаказ из этой сессии с сервера) иначе назначаем пустой массив вкачестве начального значения
-    const [tempOrder, setTempOrder] = useState(session?.temp_order || [])
+    const [tempOrder, setTempOrder] = useState(preorder?.temp_order || [])
 
+    
+    console.log('session=', session);
     //активируем запрос для обработки мутации для создания сессии. импортируем подключение setData для передачи мутаций и передадим в него запрос createSession(из @/queries/sessions) на создание сессии, с передачей внагрузку данные
-    const { mutate: createNewSession } = useMutation({//присвоить параметру mutate имя createNewSession для дальнейшего использования
-        mutationFn: (newSession) =>
-        {
-            if (!isSessionSet) {
+    const { mutate: createNewPreorder } = useMutation({//присвоить параметру mutate имя createNewPreorder для дальнейшего использования
+        mutationFn: (newPreorder) =>{
+            if (!isPreorderSet) {
                 //если сессия не установлена то выполнить запрос на создание сессии
-                setData(createSession, { data: newSession }) //использовать запрос для отправки на сервер setData и передать в него мутацию createSession с данными
-                    .then((response) =>{//потом                   
-                        
+                setData(createPreorder, { data: newPreorder }) //использовать запрос для отправки на сервер setData и передать в него мутацию createSession с данными
+                    .then((response) =>{//потом 
                         localStorage.setItem(//передать значения в localStorage:
-                            
-                            'session_id', //ключь
-                            response.create_session_item.id //значение id сессии из запроса к graphql-инпуту: input create_session_input
+                            'preorder_id', //ключь
+                            response.create_preorder_item.id //значение id сессии из запроса к graphql-инпуту: input create_session_input
                         )
                     })
-                setSession(true) //так-же установить значение для isSessionSet в булевое true
+                setPreorder(true) //так-же установить значение для isPreorderSet в булевое true
             } else {
                 //иначе(если сессия уже создана) нужно обновить только данные по id сессии
-                setData(updateSession, {
+                setData(updatePreorder, {
                     //обратиться к запросу на обновление сессии updateSession и передать в него:
-                    data: newSession, //данные (status + массив temp_order)
-                    id: localStorage.getItem('session_id'),
+                    data: newPreorder, //данные (status + массив temp_order)
+                    id: localStorage.getItem('preorder_id'),
                 }) //использовать запрос для отправки на сервер setData и передать в него мутацию updateSession с данными и id текущей сессии из localStorage браузера
             }
         },
-        onSuccess: () => {//onSuccess(функция метода useMutation): при успешной отработке функции внутир mutationFn:
-            queryClient.invalidateQueries({ queryKey: ['session'] })//Заново получим результаты запроса по ключю('session') из useQuery (https://tanstack.com/query/latest/docs/reference/QueryClient/#queryclientinvalidatequeries)
+        onSuccess: () => {//onSuccess(функция метода useMutation): при успешной отработке функции внутри mutationFn:
+            queryClient.invalidateQueries({ queryKey: ['preorder'] })//Делать недействительным все запросы по ключю('preorder'). из useQuery (https://tanstack.com/query/latest/docs/reference/QueryClient/#queryclientinvalidatequeries)
         },
     })
 
@@ -120,8 +126,8 @@ export default function CategoryPageClient({ product })
         //     id: uuidv4(),
         // });
 
-        //создание новой сессии мутацией хука useMutation - mutate: createNewSession --^
-        createNewSession({//передать данные в мутацию mutate: createNewSession при создании новой сессии
+        //создание новой сессии мутацией хука useMutation - mutate: createNewPreorder --^
+        createNewPreorder({//передать данные в мутацию mutate: createNewPreorder при создании нового предзаказа
             
             status: 'draft', //статус сессии "черновик"
             temp_order: useStore.getState().tempOrder, //массив значений полей временного заказа

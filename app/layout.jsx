@@ -6,6 +6,7 @@ import MiniCart from "./components/MiniCart";
 import Header from "./components/Header";
 import { getServerSession } from "next-auth";
 import SessProvider from '@/utils/SessionProvider'
+import { authOptions } from "./api/auth/[...nextauth]/options-graphql";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +17,8 @@ export const metadata = {
 
 export default async function RootLayout({ children })
 {
-    const session = getServerSession()
+    const session = await getServerSession(authOptions)
+    console.log('СЕССИЯ ИЗ LAYOUT', session);
 
     return (
         <html lang="en">

@@ -1,20 +1,20 @@
 'use client'
 
 import getData from '@/queries/getData'
-import { getSession } from '@/queries/sessions'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import useStore from '@/store/temp_orders'
 import { useEffect } from 'react'
+import { getPreorder } from '@/queries/preorders'
 
 export default function MiniCart()
 {
     //получить уже созданный предзаказ текущей сессии(по id сессии) для добавления в него новых данных(товаров или вариаций)
 
-    const { data: session, isSuccess, isLoading, } = useQuery({
-        queryKey: ['session'], //
+    const { data: preorder, isSuccess, isLoading, } = useQuery({
+        queryKey: ['preorder'], //
         queryFn: async () =>
-            await getData(getSession, 'session_by_id', {
-                id: localStorage.getItem('session_id'),
+            await getData(getPreorder, 'preorder_by_id', {
+                id: localStorage.getItem('preorder_id'),
             }),
         staleTime: Infinity,
         refetchOnWindowFocus: false,
@@ -26,10 +26,9 @@ export default function MiniCart()
     //загрузим сохранённый предзаказ из @/store/temp_orders для отображения 
     useEffect(() =>
     {
-        if (isSuccess && session) {//проверяется запрос useQuery и если получен статус "Успешно" и данные(session), то:
-            setInitialTempOrder(session.temp_order)//вернуть состояние setInitialTempOrder с переданными туда значениями полученными с бэкенда.
+        if (isSuccess && preorder) {//проверяется запрос useQuery и если получен статус "Успешно" и получены данные(preorder), то:
+            setInitialTempOrder(preorder.temp_order)//присвоить стейту tempOrder значение поля temp_order из данных ответа на запроса getPreorder
         }
-
     }, [isSuccess])
 
 
@@ -50,8 +49,11 @@ export default function MiniCart()
         )
     }
 
+    // console.log('Заказчик', preorder.order_customer[0]);
+
     return (
         <section className='max-w-2xl mx-auto pt-8 px-4 lg:max-w-7xl lg:px-8'>
+            <div>Заказчик: {preorder.order_customer[0].first_name} {preorder.order_customer[0].last_name}</div>
             <div>Ваш заказ</div>
             <table className='table-auto'>
                 <thead className='bg-gray-100'>
